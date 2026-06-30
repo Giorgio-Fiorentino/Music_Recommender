@@ -38,6 +38,29 @@ streamlit run app/streamlit_app.py      # interactive prototype
 python tests/test_metrics.py            # metric sanity tests
 ```
 
+## Deploy (Streamlit Cloud)
+
+The app is deployable as-is on [Streamlit Community Cloud](https://share.streamlit.io):
+
+1. Push this repo to GitHub.
+2. *New app* → pick the repo, branch `main`, **main file path** `app/streamlit_app.py`.
+
+Three things make the cloud deploy work out of the box:
+
+- **Data is fetched at runtime.** The raw `.dat` files are not committed (license +
+  size), so on a fresh checkout `prepare_data()` calls `ensure_raw_data()`, which
+  downloads and extracts the HetRec 2011 dataset into `data/raw/` on first run.
+- **`scikit-surprise` is optional.** It compiles C/Cython extensions and often
+  fails to build on hosted platforms, which would fail the whole deploy. It is
+  therefore *not* in `requirements.txt`; the pipeline skips it gracefully
+  (lazy import + `try/except`) and the from-scratch implicit ALS is the primary
+  matrix-factorization model. Install it locally for the SVD comparison:
+  `pip install scikit-surprise>=1.1.4`.
+- **Pre-computed results are committed.** `results/metrics.csv` and the comparison
+  figures are checked in so the **Evaluate** page works without running
+  `main.py` (which cannot be run on the Cloud host). Re-running `main.py` locally
+  overwrites them.
+
 ## Methods implemented (`src/`)
 
 | Module | Models |
