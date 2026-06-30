@@ -6,5 +6,9 @@ matplotlib>=3.7
 jupyter>=1.0
 # Interactive prototype:
 streamlit>=1.30
-# Matrix factorization (library SVD comparison). Builds a wheel on Python 3.13.
-scikit-surprise>=1.1.4
+# Matrix factorization (library SVD comparison) is OPTIONAL. scikit-surprise
+# compiles C/Cython extensions and often fails to build on hosted platforms
+# (e.g. Streamlit Cloud), which would fail the whole deploy. The pipeline runs
+# without it (lazy import + graceful skip); the from-scratch implicit ALS is the
+# primary matrix-factorization model. To enable the SVD comparison locally:
+#   pip install scikit-surprise>=1.1.4

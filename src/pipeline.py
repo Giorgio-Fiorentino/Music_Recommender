@@ -25,6 +25,7 @@ def prepare_data():
     Returns:
         dict with keys: ratings, items, friends, train, test
     """
+    dl.ensure_raw_data()  # download the dataset on a fresh checkout (e.g. cloud)
     ratings = dl.filter_active(dl.load_ratings())
     items = dl.load_items()
     friends = dl.load_friends()

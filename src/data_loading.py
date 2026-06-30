@@ -26,11 +26,42 @@ of this module, so the design decisions here shape the whole project:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 
 from . import config
+
+
+def ensure_raw_data() -> None:
+    """Make sure the raw Last.fm .dat files exist; download them if missing.
+
+    The raw dataset is not committed to git (license + size), so on a fresh
+    checkout -- e.g. a Streamlit Cloud deploy -- ``data/raw/`` is empty. Rather
+    than crash, we fetch and extract the HetRec 2011 zip on first use. Locally
+    this is a no-op once ``scripts/download_data.py`` has been run.
+    """
+    if config.RATINGS_PATH.exists():
+        return
+
+    import io
+    import urllib.request
+    import zipfile
+
+    url = "https://files.grouplens.org/datasets/hetrec2011/hetrec2011-lastfm-2k.zip"
+    config.RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        blob = resp.read()
+    with zipfile.ZipFile(io.BytesIO(blob)) as zf:
+        for name in zf.namelist():
+            if name.endswith("/"):
+                continue
+            target = config.RAW_DATA_DIR / Path(name).name
+            with zf.open(name) as src, open(target, "wb") as dst:
+                dst.write(src.read())
 
 
 def _read_dat(path) -> pd.DataFrame:
